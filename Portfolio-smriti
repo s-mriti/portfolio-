@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portfolio — Dev & Designer</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --ink: #0a0a0f;
+    --paper: #f4f0e8;
+    --acid: #c8f135;
+    --electric: #4f7cff;
+    --rust: #e8512a;
+    --ghost: rgba(200,241,53,0.08);
+    --ff-display: 'Syne', sans-serif;
+    --ff-mono: 'Space Mono', monospace;
+  }
+
+  html { scroll-behavior: auto; }
+  body {
+    background: var(--ink);
+    color: var(--paper);
+    font-family: var(--ff-display);
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* Custom cursor */
+  #cursor {
+    position: fixed; width: 12px; height: 12px;
+    background: var(--acid); border-radius: 50%;
+    pointer-events: none; z-index: 9999;
+    transform: translate(-50%, -50%);
+    transition: transform 0.1s, width 0.3s, height 0.3s, background 0.3s;
+    mix-blend-mode: difference;
+  }
+  #cursor-ring {
+    position: fixed; width: 40px; height: 40px;
+    border: 1px solid var(--acid); border-radius: 50%;
+    pointer-events: none; z-index: 9998;
+    transform: translate(-50%, -50%);
+    opacity: 0.5;
+    transition: transform 0.15s ease-out, width 0.3s, height 0.3s;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 1.5rem 3rem;
+    mix-blend-mode: difference;
+  }
+  .nav-logo {
+    font-size: 1rem; font-weight: 800; letter-spacing: 0.3em;
+    color: var(--paper); text-transform: uppercase;
+    font-family: var(--ff-mono);
+  }
+  .nav-links { display: flex; gap: 2.5rem; list-style: none; }
+  .nav-links a {
+    font-family: var(--ff-mono); font-size: 0.7rem;
+    color: var(--paper); text-decoration: none; letter-spacing: 0.2em;
+    text-transform: uppercase; opacity: 0.6;
+    transition: opacity 0.2s;
+  }
+  .nav-links a:hover { opacity: 1; }
+
+  /* SECTIONS */
+  section { position: relative; }
+
+  /* ===== HERO ===== */
+  #hero {
+    height: 100vh; display: flex; flex-direction: column;
+    justify-content: center; padding: 0 3rem;
+    overflow: hidden;
+  }
+  .hero-eyebrow {
+    font-family: var(--ff-mono); font-size: 0.7rem;
+    letter-spacing: 0.4em; text-transform: uppercase;
+    color: var(--acid); margin-bottom: 1.5rem;
+    opacity: 0;
+  }
+  .hero-name {
+    font-size: clamp(4rem, 10vw, 9rem); font-weight: 800;
+    line-height: 0.92; letter-spacing: -0.03em;
+    overflow: hidden;
+  }
+  .hero-name span { display: block; transform: translateY(110%); }
+  .hero-role {
+    margin-top: 2rem; font-size: clamp(1rem, 2vw, 1.4rem);
+    font-weight: 400; color: rgba(244,240,232,0.5);
+    max-width: 480px; line-height: 1.6;
+    opacity: 0; transform: translateY(30px);
+  }
+  .hero-cta {
+    margin-top: 3rem; display: inline-flex; align-items: center; gap: 1rem;
+    font-family: var(--ff-mono); font-size: 0.75rem; letter-spacing: 0.2em;
+    text-transform: uppercase; color: var(--acid);
+    opacity: 0; transform: translateY(20px);
+  }
+  .hero-cta::after {
+    content: ''; width: 48px; height: 1px; background: var(--acid);
+    transition: width 0.3s;
+  }
+  .hero-scroll-hint {
+    position: absolute; bottom: 2rem; right: 3rem;
+    font-family: var(--ff-mono); font-size: 0.6rem;
+    letter-spacing: 0.3em; text-transform: uppercase;
+    color: rgba(244,240,232,0.3); writing-mode: vertical-rl;
+  }
+  .grid-bg {
+    position: absolute; inset: 0; opacity: 0.04;
+    background-image: linear-gradient(var(--paper) 1px, transparent 1px),
+                      linear-gradient(90deg, var(--paper) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+  }
+  .hero-number {
+    position: absolute; right: 3rem; top: 50%;
+    transform: translateY(-50%);
+    font-size: clamp(8rem, 20vw, 18rem); font-weight: 800;
+    color: transparent; -webkit-text-stroke: 1px rgba(244,240,232,0.06);
+    line-height: 1; pointer-events: none; user-select: none;
+  }
+
+  /* ===== ABOUT (PINNED) ===== */
+  #about-pin-wrapper { height: 300vh; }
+  #about {
+    position: sticky; top: 0; height: 100vh;
+    display: flex; align-items: center;
+    padding: 0 3rem; overflow: hidden;
+  }
+  .about-inner {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 6rem;
+    width: 100%;
+  }
+  .about-left .section-tag {
+    font-family: var(--ff-mono); font-size: 0.65rem;
+    letter-spacing: 0.4em; text-transform: uppercase;
+    color: var(--electric); margin-bottom: 1.5rem;
+  }
+  .about-title {
+    font-size: clamp(2.5rem, 5vw, 4.5rem); font-weight: 800;
+    line-height: 1; letter-spacing: -0.02em;
+  }
+  .about-title em {
+    font-style: normal; color: var(--acid);
+    -webkit-text-stroke: 0; display: block;
+  }
+  .about-desc {
+    margin-top: 2rem; font-size: 1rem; line-height: 1.8;
+    color: rgba(244,240,232,0.55); font-family: var(--ff-mono);
+    font-size: 0.82rem;
+  }
+  .about-right { display: flex; flex-direction: column; justify-content: center; gap: 1.5rem; }
+  .skill-row {
+    display: flex; align-items: center; gap: 1.5rem;
+    padding: 1.2rem 0; border-bottom: 1px solid rgba(244,240,232,0.08);
+  }
+  .skill-row:first-child { border-top: 1px solid rgba(244,240,232,0.08); }
+  .skill-num {
+    font-family: var(--ff-mono); font-size: 0.6rem;
+    color: var(--acid); width: 24px; flex-shrink: 0;
+  }
+  .skill-name { flex: 1; font-size: 1rem; font-weight: 700; letter-spacing: -0.01em; }
+  .skill-bar-wrap { width: 120px; height: 2px; background: rgba(244,240,232,0.1); }
+  .skill-bar { height: 100%; background: var(--acid); width: 0%; transition: none; }
+  .skill-pct { font-family: var(--ff-mono); font-size: 0.6rem; color: rgba(244,240,232,0.4); width: 28px; text-align: right; }
+
+  /* ===== WORKS (HORIZONTAL SCROLL) ===== */
+  #works-pin-wrapper { height: 500vh; }
+  #works {
+    position: sticky; top: 0; height: 100vh; overflow: hidden;
+  }
+  .works-track {
+    display: flex; height: 100%; align-items: center;
+    gap: 3rem; padding: 0 3rem;
+    width: max-content;
+  }
+  .works-header {
+    flex-shrink: 0; width: 30vw;
+    display: flex; flex-direction: column; justify-content: center;
+  }
+  .works-header .section-tag {
+    font-family: var(--ff-mono); font-size: 0.65rem;
+    letter-spacing: 0.4em; text-transform: uppercase;
+    color: var(--rust); margin-bottom: 1.5rem;
+  }
+  .works-title { font-size: clamp(3rem, 5vw, 5rem); font-weight: 800; line-height: 1; letter-spacing: -0.03em; }
+  .project-card {
+    flex-shrink: 0; width: 380px; height: 500px;
+    background: rgba(244,240,232,0.04);
+    border: 1px solid rgba(244,240,232,0.08);
+    border-radius: 4px; overflow: hidden;
+    position: relative; cursor: none;
+    transition: border-color 0.3s;
+  }
+  .project-card:hover { border-color: var(--acid); }
+  .card-bg {
+    position: absolute; inset: 0;
+    background-size: cover; background-position: center;
+    transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+  .project-card:hover .card-bg { transform: scale(1.05); }
+  .card-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(10,10,15,0.95) 0%, transparent 50%);
+  }
+  .card-content {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    padding: 2rem;
+  }
+  .card-tag {
+    font-family: var(--ff-mono); font-size: 0.6rem;
+    letter-spacing: 0.3em; text-transform: uppercase;
+    color: var(--acid); margin-bottom: 0.8rem;
+  }
+  .card-title { font-size: 1.5rem; font-weight: 800; line-height: 1.1; margin-bottom: 0.6rem; }
+  .card-desc { font-family: var(--ff-mono); font-size: 0.7rem; color: rgba(244,240,232,0.5); line-height: 1.6; }
+  .card-number {
+    position: absolute; top: 1.5rem; right: 1.5rem;
+    font-family: var(--ff-mono); font-size: 0.6rem;
+    color: rgba(244,240,232,0.3); letter-spacing: 0.1em;
+  }
+  /* Card color patterns */
+  .card-bg-1 { background-color: #1a0a2e; background-image: radial-gradient(circle at 30% 40%, #4f1f8a 0%, transparent 60%), radial-gradient(circle at 80% 70%, #1a3a6e 0%, transparent 50%); }
+  .card-bg-2 { background-color: #0d1f0d; background-image: radial-gradient(circle at 60% 30%, #1a4a1a 0%, transparent 60%), radial-gradient(circle at 20% 80%, #0a2a0a 0%, transparent 50%); }
+  .card-bg-3 { background-color: #1f0a0a; background-image: radial-gradient(circle at 40% 50%, #5a1a0a 0%, transparent 60%), radial-gradient(circle at 70% 20%, #3a0a0a 0%, transparent 50%); }
+  .card-bg-4 { background-color: #0a0a1f; background-image: radial-gradient(circle at 50% 50%, #0a1a4a 0%, transparent 70%), radial-gradient(circle at 80% 80%, #1a0a3a 0%, transparent 40%); }
+  .card-bg-5 { background-color: #1f1a0a; background-image: radial-gradient(circle at 30% 60%, #4a3a0a 0%, transparent 60%), radial-gradient(circle at 70% 30%, #2a1a0a 0%, transparent 50%); }
+
+  /* ===== COUNTER ===== */
+  #stats {
+    height: 100vh; display: flex; align-items: center;
+    padding: 0 3rem; background: var(--acid);
+    color: var(--ink); overflow: hidden;
+  }
+  .stats-inner { width: 100%; display: grid; grid-template-columns: repeat(4, 1fr); gap: 2rem; }
+  .stat-item { text-align: center; }
+  .stat-num {
+    font-size: clamp(3rem, 7vw, 7rem); font-weight: 800;
+    line-height: 1; letter-spacing: -0.04em;
+    display: flex; align-items: flex-start; justify-content: center;
+  }
+  .stat-num sup {
+    font-size: 0.35em; font-weight: 700; margin-top: 0.3em; margin-left: 0.1em;
+  }
+  .stat-label {
+    margin-top: 0.5rem; font-family: var(--ff-mono);
+    font-size: 0.7rem; letter-spacing: 0.3em; text-transform: uppercase;
+    color: rgba(10,10,15,0.5);
+  }
+
+  /* ===== CONTACT ===== */
+  #contact {
+    height: 100vh; display: flex; flex-direction: column;
+    justify-content: center; padding: 0 3rem; overflow: hidden;
+  }
+  .contact-tag {
+    font-family: var(--ff-mono); font-size: 0.65rem;
+    letter-spacing: 0.4em; text-transform: uppercase;
+    color: var(--rust); margin-bottom: 1.5rem; opacity: 0;
+  }
+  .contact-big {
+    font-size: clamp(3rem, 8vw, 8rem); font-weight: 800;
+    line-height: 0.9; letter-spacing: -0.04em;
+    overflow: hidden;
+  }
+  .contact-big span { display: block; transform: translateY(110%); }
+  .contact-email {
+    margin-top: 3rem; font-family: var(--ff-mono);
+    font-size: clamp(0.9rem, 1.5vw, 1.1rem);
+    color: var(--acid); text-decoration: none;
+    border-bottom: 1px solid var(--acid); padding-bottom: 4px;
+    display: inline-block; opacity: 0; transform: translateY(20px);
+  }
+  .contact-row {
+    margin-top: 3rem; display: flex; gap: 3rem; align-items: center;
+    opacity: 0; transform: translateY(20px);
+  }
+  .social-link {
+    font-family: var(--ff-mono); font-size: 0.65rem;
+    letter-spacing: 0.3em; text-transform: uppercase;
+    color: rgba(244,240,232,0.4); text-decoration: none;
+    transition: color 0.2s;
+  }
+  .social-link:hover { color: var(--acid); }
+
+  /* ===== DEBUG PANEL ===== */
+  #debug-panel {
+    position: fixed; top: 1rem; right: 1rem; z-index: 1000;
+    background: rgba(10,10,15,0.92); border: 1px solid var(--acid);
+    border-radius: 4px; padding: 0.8rem 1rem; min-width: 180px;
+    font-family: var(--ff-mono); font-size: 0.6rem;
+    color: var(--acid); backdrop-filter: blur(8px);
+    display: none;
+  }
+  #debug-panel.active { display: block; }
+  .debug-title { font-weight: 700; letter-spacing: 0.2em; margin-bottom: 0.6rem; opacity: 0.6; }
+  .debug-row { display: flex; justify-content: space-between; gap: 1rem; margin: 3px 0; }
+  .debug-row span:last-child { color: var(--paper); }
+  .debug-toggle {
+    position: fixed; bottom: 2rem; right: 2rem; z-index: 1001;
+    background: var(--acid); color: var(--ink); border: none;
+    font-family: var(--ff-mono); font-size: 0.65rem;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    padding: 0.6rem 1.2rem; border-radius: 2px; cursor: none;
+    font-weight: 700;
+  }
+
+  /* ===== NOISE OVERLAY ===== */
+  .noise {
+    position: fixed; inset: 0; z-index: 200;
+    opacity: 0.03; pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    background-size: 128px 128px;
+  }
+
+  /* GSAP markers override style */
+  .gsap-marker-start, .gsap-marker-end, .gsap-marker-scroller-start, .gsap-marker-scroller-end {
+    font-family: var(--ff-mono) !important;
+    font-size: 10px !important;
+  }
+
+  @media (max-width: 768px) {
+    nav { padding: 1rem 1.5rem; }
+    #hero, #about, #contact { padding: 0 1.5rem; }
+    .about-inner { grid-template-columns: 1fr; gap: 3rem; }
+    .stats-inner { grid-template-columns: repeat(2, 1fr); }
+    .works-header { width: 80vw; }
+  }
+</style>
+</head>
+<body>
+
+<div class="noise"></div>
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">Smriti.Dev</div>
+  <ul class="nav-links">
+    <li><a href="#about">About</a></li>
+    <li><a href="#works">Works</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+</nav>
+
+<!-- DEBUG TOGGLE -->
+<button class="debug-toggle" id="debugToggle">⬡ Debug</button>
+<div id="debug-panel">
+  <div class="debug-title">ScrollTrigger Debug</div>
+  <div class="debug-row"><span>Scroll Y</span><span id="d-scrollY">0</span></div>
+  <div class="debug-row"><span>Progress</span><span id="d-progress">0%</span></div>
+  <div class="debug-row"><span>Active Section</span><span id="d-section">Hero</span></div>
+  <div class="debug-row"><span>Direction</span><span id="d-dir">—</span></div>
+  <div class="debug-row"><span>Velocity</span><span id="d-vel">0</span></div>
+  <div class="debug-row"><span>Pin Active</span><span id="d-pin">No</span></div>
+</div>
+
+<!-- ===== HERO ===== -->
+<section id="hero">
+  <div class="grid-bg"></div>
+  <div class="hero-number" id="heroNum">01</div>
+  <p class="hero-eyebrow">Second Year B.Tech CS-AI Student |Banasthali Vidyapeeth| </p>
+  <h1 class="hero-name">
+    <span>SMRITI</span>
+    <span style="color: var(--acid);">PANDEY</span>
+  </h1>
+  <p class="hero-role">Creative developer & visual designer crafting immersive digital experiences that push the boundaries of what's possible on the web.</p>
+  <a class="hero-cta" href="#works">Explore Work</a>
+  <p class="hero-scroll-hint">Scroll to Explore</p>
+</section>
+
+<!-- ===== ABOUT (PINNED) ===== -->
+<div id="about-pin-wrapper">
+  <section id="about">
+    <div class="about-inner">
+      <div class="about-left">
+        <p class="section-tag">// About Me</p>
+        <h2 class="about-title">
+          Building<br>things that
+          <em>matter.</em>
+        </h2>
+        <p class="about-desc">I’m a second-year B.Tech Computer Science student specializing in Artificial Intelligence, passionate about building smart and impactful digital solutions. I enjoy turning ideas into real-world applications through code, with a strong foundation in programming, data structures, and problem-solving.
+
+My interests lie in Artificial Intelligence, Machine Learning, and software development, and I’m constantly exploring new technologies to expand my skill set. I love working on projects that challenge me to think creatively and push my technical boundaries.
+
+Currently, I’m focused on gaining hands-on experience, building meaningful projects, and growing into a skilled developer ready to contribute to innovative and scalable tech solutions.
+.</p>
+      </div>
+      <div class="about-right" id="skillsList">
+        <div class="skill-row">
+          <span class="skill-num">01</span>
+          <span class="skill-name">Three.js / WebGL</span>
+          <div class="skill-bar-wrap"><div class="skill-bar" data-width="92"></div></div>
+          <span class="skill-pct">92%</span>
+        </div>
+        <div class="skill-row">
+          <span class="skill-num">02</span>
+          <span class="skill-name">React / Next.js</span>
+          <div class="skill-bar-wrap"><div class="skill-bar" data-width="96"></div></div>
+          <span class="skill-pct">96%</span>
+        </div>
+        <div class="skill-row">
+          <span class="skill-num">03</span>
+          <span class="skill-name">GSAP Animation</span>
+          <div class="skill-bar-wrap"><div class="skill-bar" data-width="88"></div></div>
+          <span class="skill-pct">88%</span>
+        </div>
+        <div class="skill-row">
+          <span class="skill-num">04</span>
+          <span class="skill-name">Node / Postgres</span>
+          <div class="skill-bar-wrap"><div class="skill-bar" data-width="80"></div></div>
+          <span class="skill-pct">80%</span>
+        </div>
+        <div class="skill-row">
+          <span class="skill-num">05</span>
+          <span class="skill-name">UI / Motion Design</span>
+          <div class="skill-bar-wrap"><div class="skill-bar" data-width="85"></div></div>
+          <span class="skill-pct">85%</span>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ===== WORKS (HORIZONTAL SCROLL) ===== -->
+<div id="works-pin-wrapper">
+  <section id="works">
+    <div class="works-track" id="worksTrack">
+      <div class="works-header">
+        <p class="section-tag">// Selected Work</p>
+        <h2 class="works-title">Case<br>Studies</h2>
+      </div>
+
+      <div class="project-card">
+        <div class="card-bg card-bg-1"></div>
+        <div class="card-overlay"></div>
+        <div class="card-content">
+          <p class="card-tag">C</p>
+           <p class="card-tag">HTML</p>
+         <p class="card-tag">JAVA</p>
+         <p class="card-tag">MY SQL</p>
+         <p class="card-tag">PYTHON</p>
+         <p class="card-tag">HTML</p>
+          <h3 class="card-title">DATA STRUCTURES IN C</h3>
+          <p class="card-desc">WEBSITE DESIGNS.</p>
+        </div>
+        <div class="card-number">001</div>
+      </div>
+
+      <div class="project-card">
+        <div class="card-bg card-bg-2"></div>
+        <div class="card-overlay"></div>
+        <div class="card-content">
+          <p class="card-tag">Health-Websites </p>
+          <h3 class="card-title">Indogulfwellness</h3>
+          <p class="card-desc">Indogulfyoga.</p>
+        </div>
+        <div class="card-number">002</div>
+      </div>
+
+      <div class="project-card">
+        <div class="card-bg card-bg-3"></div>
+        <div class="card-overlay"></div>
+        <div class="card-content">
+          <p class="card-tag">HTML,CSS,JAVA,GSAP</p>
+          <h3 class="card-title">Web-designing</h3>
+          <p class="card-desc">Complex data pipeline visualizer with real-time WebSocket updates.</p>
+        </div>
+        <div class="card-number">003</div>
+      </div>
+
+      <div class="project-card">
+        <div class="card-bg card-bg-4"></div>
+        <div class="card-overlay"></div>
+        <div class="card-content">
+          <p class="card-tag">Branding · Motion</p>
+          <h3 class="card-title">Orbit Agency</h3>
+          <p class="card-desc">Full brand identity and interactive microsite for a Berlin creative agency.</p>
+        </div>
+        <div class="card-number">004</div>
+      </div>
+
+      <div class="project-card">
+        <div class="card-bg card-bg-5"></div>
+        <div class="card-overlay"></div>
+        <div class="card-content">
+          <p class="card-tag">AI · Interface</p>
+          <h3 class="card-title">Luminary AI</h3>
+          <p class="card-desc">Conversational AI product with generative UI and adaptive interface states.</p>
+        </div>
+        <div class="card-number">005</div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ===== STATS ===== -->
+<section id="stats">
+  <div class="stats-inner">
+    <div class="stat-item">
+      <div class="stat-num"><span class="count" data-target="47">0</span><sup>+</sup></div>
+      <p class="stat-label">Projects Shipped</p>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num"><span class="count" data-target="6">0</span><sup>yrs</sup></div>
+      <p class="stat-label">Experience</p>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num"><span class="count" data-target="98">0</span><sup>%</sup></div>
+      <p class="stat-label">Client Satisfaction</p>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num"><span class="count" data-target="12">0</span><sup>+</sup></div>
+      <p class="stat-label">Awards Won</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CONTACT ===== -->
+<section id="contact">
+  <p class="contact-tag">// Let's Talk</p>
+  <h2 class="contact-big">
+    <span>Got a</span>
+    <span style="color: var(--acid);">project?</span>
+  </h2>
+  <a href="mailto:alex@morgan.dev" class="contact-email">alex@morgan.dev</a>
+  <div class="contact-row">
+    <a href="#" class="social-link">Twitter</a>
+    <a href="#" class="social-link">GitHub</a>
+    <a href="#" class="social-link">LinkedIn</a>
+    <a href="#" class="social-link">Dribbble</a>
+  </div>
+</section>
+
+<script>
+  gsap.registerPlugin(ScrollTrigger);
+
+  // ── Custom Cursor ──────────────────────────────────────────
+  const cursor = document.getElementById('cursor');
+  const ring = document.getElementById('cursor-ring');
+  let mx = 0, my = 0;
+  document.addEventListener('mousemove', e => {
+    mx = e.clientX; my = e.clientY;
+    gsap.to(cursor, { x: mx, y: my, duration: 0.1 });
+    gsap.to(ring, { x: mx, y: my, duration: 0.25 });
+  });
+  document.querySelectorAll('a, button, .project-card').forEach(el => {
+    el.addEventListener('mouseenter', () => {
+      gsap.to(cursor, { width: 48, height: 48, opacity: 0.3, duration: 0.3 });
+      gsap.to(ring, { scale: 1.5, duration: 0.3 });
+    });
+    el.addEventListener('mouseleave', () => {
+      gsap.to(cursor, { width: 12, height: 12, opacity: 1, duration: 0.3 });
+      gsap.to(ring, { scale: 1, duration: 0.3 });
+    });
+  });
+
+  // ── Debug Panel ────────────────────────────────────────────
+  let debugActive = false;
+  let markersActive = false;
+  document.getElementById('debugToggle').addEventListener('click', () => {
+    debugActive = !debugActive;
+    document.getElementById('debug-panel').classList.toggle('active', debugActive);
+
+    if (!markersActive && debugActive) {
+      markersActive = true;
+      ScrollTrigger.getAll().forEach(t => t.markers = true);
+      ScrollTrigger.refresh();
+    }
+  });
+
+  const dScrollY = document.getElementById('d-scrollY');
+  const dProgress = document.getElementById('d-progress');
+  const dSection = document.getElementById('d-section');
+  const dDir = document.getElementById('d-dir');
+  const dVel = document.getElementById('d-vel');
+  const dPin = document.getElementById('d-pin');
+
+  let lastScrollY = 0, lastTime = Date.now();
+  window.addEventListener('scroll', () => {
+    if (!debugActive) return;
+    const sy = window.scrollY;
+    const now = Date.now();
+    const dt = (now - lastTime) / 1000;
+    const vel = dt > 0 ? Math.abs((sy - lastScrollY) / dt) : 0;
+    const totalH = document.body.scrollHeight - window.innerHeight;
+    const prog = (sy / totalH * 100).toFixed(1);
+
+    dScrollY.textContent = Math.round(sy) + 'px';
+    dProgress.textContent = prog + '%';
+    dDir.textContent = sy > lastScrollY ? '↓ Down' : '↑ Up';
+    dVel.textContent = Math.round(vel) + 'px/s';
+
+    const sections = ['Hero', 'About', 'Works', 'Stats', 'Contact'];
+    const sEls = [
+      document.getElementById('hero'),
+      document.getElementById('about'),
+      document.getElementById('works'),
+      document.getElementById('stats'),
+      document.getElementById('contact')
+    ];
+    sEls.forEach((el, i) => {
+      const r = el.getBoundingClientRect();
+      if (r.top <= 100 && r.bottom > 0) dSection.textContent = sections[i];
+    });
+
+    const pins = ScrollTrigger.getAll().filter(t => t.pin);
+    const anyPin = pins.some(t => t.isActive);
+    dPin.textContent = anyPin ? 'Yes ✓' : 'No';
+
+    lastScrollY = sy; lastTime = now;
+  });
+
+  // ── Hero Animation ─────────────────────────────────────────
+  const heroTL = gsap.timeline({ defaults: { ease: 'power3.out' } });
+  heroTL
+    .to('.hero-eyebrow', { opacity: 1, duration: 0.8, delay: 0.3 })
+    .to('.hero-name span', { y: 0, duration: 1, stagger: 0.12, ease: 'expo.out' }, '-=0.4')
+    .to('.hero-role', { opacity: 1, y: 0, duration: 0.8 }, '-=0.5')
+    .to('.hero-cta', { opacity: 1, y: 0, duration: 0.8 }, '-=0.4');
+
+  // Hero number parallax
+  gsap.to('#heroNum', {
+    y: -120, opacity: 0.02,
+    ease: 'none',
+    scrollTrigger: {
+      trigger: '#hero', start: 'top top', end: 'bottom top', scrub: 1
+    }
+  });
+
+  // ── ABOUT — PINNED + SCRUBBED ──────────────────────────────
+  // PIN the about section
+  ScrollTrigger.create({
+    trigger: '#about-pin-wrapper',
+    start: 'top top',
+    end: 'bottom bottom',
+    pin: '#about',
+    pinSpacing: false,
+    markers: false,
+    id: 'about-pin',
+    onEnter: () => dPin.textContent = 'Yes ✓ (About)',
+    onLeave: () => dPin.textContent = 'No',
+    onEnterBack: () => dPin.textContent = 'Yes ✓ (About)',
+    onLeaveBack: () => dPin.textContent = 'No'
+  });
+
+  // Scrub: About content reveals
+  const aboutTL = gsap.timeline({
+    scrollTrigger: {
+      trigger: '#about-pin-wrapper',
+      start: 'top top',
+      end: 'bottom bottom',
+      scrub: 1.5,
+      markers: false,
+      id: 'about-scrub'
+    }
+  });
+  aboutTL
+    .from('.about-left .section-tag', { x: -60, opacity: 0 })
+    .from('.about-title', { x: -80, opacity: 0 }, '-=0.5')
+    .from('.about-desc', { y: 30, opacity: 0 }, '-=0.5')
+    .from('.skill-row', { x: 80, opacity: 0, stagger: 0.15 }, '-=0.3');
+
+  // Skill bars fill on scroll
+  document.querySelectorAll('.skill-bar').forEach(bar => {
+    const w = bar.dataset.width;
+    gsap.to(bar, {
+      width: w + '%',
+      ease: 'power2.out',
+      scrollTrigger: {
+        trigger: '#about-pin-wrapper',
+        start: '30% top',
+        end: '70% top',
+        scrub: 2,
+        id: 'skill-bar-' + w
+      }
+    });
+  });
+
+  // ── WORKS — HORIZONTAL SCRUB ──────────────────────────────
+  const track = document.getElementById('worksTrack');
+  const getScrollAmount = () => -(track.scrollWidth - window.innerWidth);
+
+  ScrollTrigger.create({
+    trigger: '#works-pin-wrapper',
+    start: 'top top',
+    end: 'bottom bottom',
+    pin: '#works',
+    pinSpacing: false,
+    id: 'works-pin',
+    markers: false,
+    onEnter: () => dPin.textContent = 'Yes ✓ (Works)',
+    onLeave: () => dPin.textContent = 'No',
+    onEnterBack: () => dPin.textContent = 'Yes ✓ (Works)',
+    onLeaveBack: () => dPin.textContent = 'No'
+  });
+
+  gsap.to('#worksTrack', {
+    x: getScrollAmount,
+    ease: 'none',
+    scrollTrigger: {
+      trigger: '#works-pin-wrapper',
+      start: 'top top',
+      end: 'bottom bottom',
+      scrub: 1,
+      markers: false,
+      id: 'works-scroll'
+    }
+  });
+
+  // Cards entrance stagger
+  gsap.from('.project-card', {
+    y: 80, opacity: 0, stagger: 0.12, ease: 'power3.out',
+    scrollTrigger: {
+      trigger: '#works-pin-wrapper',
+      start: 'top 80%',
+      markers: false,
+      id: 'cards-in'
+    }
+  });
+
+  // ── STATS — COUNTER + 3D ──────────────────────────────────
+  gsap.from('#stats', {
+    backgroundColor: '#0a0a0f',
+    ease: 'none',
+    scrollTrigger: {
+      trigger: '#stats',
+      start: 'top bottom',
+      end: 'top 60%',
+      scrub: 1,
+      markers: false,
+      id: 'stats-bg'
+    }
+  });
+
+  // Counter animation
+  document.querySelectorAll('.count').forEach(el => {
+    const target = +el.dataset.target;
+    ScrollTrigger.create({
+      trigger: '#stats',
+      start: 'top 70%',
+      markers: false,
+      id: 'counter-' + target,
+      onEnter: () => {
+        gsap.to({ val: 0 }, {
+          val: target, duration: 1.8,
+          ease: 'power2.out',
+          onUpdate: function() {
+            el.textContent = Math.round(this.targets()[0].val);
+          }
+        });
+      },
+      once: true
+    });
+  });
+
+  gsap.from('.stat-item', {
+    y: 60, opacity: 0, stagger: 0.15, duration: 0.8,
+    ease: 'power3.out',
+    scrollTrigger: {
+      trigger: '#stats', start: 'top 70%',
+      markers: false, id: 'stat-items-in'
+    }
+  });
+
+  // ── CONTACT ───────────────────────────────────────────────
+  gsap.to('.contact-tag', {
+    opacity: 1, duration: 0.6,
+    scrollTrigger: { trigger: '#contact', start: 'top 70%', markers: false, id: 'contact-tag' }
+  });
+
+  gsap.to('.contact-big span', {
+    y: 0, stagger: 0.12, duration: 1, ease: 'expo.out',
+    scrollTrigger: { trigger: '#contact', start: 'top 60%', markers: false, id: 'contact-title' }
+  });
+
+  gsap.to('.contact-email', {
+    opacity: 1, y: 0, duration: 0.8,
+    scrollTrigger: { trigger: '#contact', start: 'top 50%', markers: false, id: 'contact-email' }
+  });
+
+  gsap.to('.contact-row', {
+    opacity: 1, y: 0, duration: 0.8, delay: 0.2,
+    scrollTrigger: { trigger: '#contact', start: 'top 50%', markers: false, id: 'contact-row' }
+  });
+
+  // ── DEBUG: toggle markers on existing triggers ─────────────
+  document.getElementById('debugToggle').addEventListener('click', () => {
+    if (markersActive) {
+      ScrollTrigger.getAll().forEach(t => { t.vars.markers = debugActive; });
+      ScrollTrigger.refresh();
+    }
+  });
+
+  ScrollTrigger.refresh();
+</script>
+</body>
+</html>
